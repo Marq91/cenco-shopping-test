@@ -1,6 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { getAllProduct, getProductByCode } = require("./product-service");
+const { 
+  getAllProduct, 
+  getProductByCode,
+  handleProductCodes,
+  handleTotals
+} = require("./product-service");
 
 const app = express();
 app.use(bodyParser.json());
@@ -17,8 +22,15 @@ app.get("/product/:code", (req, res) => {
 
 //Need to calculate total and discount
 app.post("/checkout", (req, res) => {
-  // solo obtener los productos que se compraran (req.body)
+  // Obtiene los productos que vienen en el body
   const codes = handleProductCodes(req.body); 
+  if (!codes) {
+    return res.status(400).json({
+      ok: false,
+      error: "Product Codes not found"
+    })
+  };
+
   const totals = handleTotals(req.body);
   
   const result = {
@@ -29,27 +41,6 @@ app.post("/checkout", (req, res) => {
   };
   res.json(result);
 });
-
-function handleProductCodes(products) {
-  const codesList = products.map(product => product.code);
-  return codesList
-}
-
-function handleTotals(products) {
-  let total = 0;
-  products.map(product => (total += product.price));
-
-  const discounts = products.map(product => product.discount);
-  const totalDiscount = discounts.reduce((acc, element) => acc + element, 0);
-
-  const totalToPay = total - totalDiscount;
-
-  return {
-    total: total,
-    totalDiscount: totalDiscount,
-    totalToPay: totalToPay
-  }
-}
 
 app.listen(3000);
 console.log("Express started on port 3000");

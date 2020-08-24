@@ -7,7 +7,37 @@ const products = [
 ];
 
 const getAllProduct = () => products;
-const getProductByCode = (code) =>
-  products.find((product) => product.code == req.params.code);
 
-module.exports = { getAllProduct, getProductByCode };
+const getProductByCode = (code) =>
+  products.find((product) => product.code == code); // Error-> req.params.code
+
+const handleProductCodes = (productList) => {
+  try {
+    const codesList = productList.map(product => product.code);
+    return codesList
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+};
+
+const handleTotals = (productList) => {
+  let total = 0;
+  productList.map(product => (total += product.price));
+  const discounts = productList.map(product => product.discount);
+  const totalDiscount = discounts.reduce((acc, element) => acc + element, 0);
+  const totalToPay = total - totalDiscount;
+
+  return {
+    total: total,
+    totalDiscount: totalDiscount,
+    totalToPay: totalToPay
+  }
+};
+
+module.exports = { 
+  getAllProduct, 
+  getProductByCode, 
+  handleProductCodes,
+  handleTotals
+};
